@@ -17,7 +17,7 @@ import {
 import type { Deal, PipelineStage } from "@/types";
 import { DealCard } from "./deal-card";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Plus, Sparkles } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { formatCurrency } from "@/lib/currency";
 import { useTranslations } from "next-intl";
@@ -103,8 +103,61 @@ export function PipelineBoard({
           natural layout. The board can still overflow horizontally on
           lg+ once a pipeline has many stages (columns keep a 260px
           min-width), so a thin scrollbar stays visible on desktop. */}
+      {/* Service journey header: the stepper on the left is *of* a
+          service, so the service itself — the main piece of information
+          here — gets top billing as a standalone badge on the right
+          rather than being buried in a column label. It's rendered on
+          its own row on mobile (where the stepper is hidden) and
+          inline at the stepper's right edge on desktop. */}
+      <div className="mb-1 flex items-start justify-between gap-3">
+        {/* Service journey stepper — desktop only. Columns below share a
+            row here (same flex-1/basis-260/gap-3 config as the board row)
+            so each numbered step lines up directly above its column, with
+            a connecting line bridging the gap between them. On mobile the
+            columns scroll independently (peek/snap), so a full-bleed
+            connector can't track them; the step numeral instead lives in
+            each column's own header (see StageColumn) where it still
+            reads as "step N of the service" without needing alignment. */}
+
+
+        {/* <ol className="hidden flex-1 lg:flex lg:gap-3">
+          {sortedStages.map((stage, index) => (
+            <li
+              key={stage.id}
+              className="relative flex-1 basis-[260px] px-1 pb-2 text-center"
+            >
+              {index > 0 && (
+                <span
+                  aria-hidden
+                  className="absolute left-0 top-[13px] h-0.5 w-1/2"
+                  style={{ backgroundColor: sortedStages[index - 1].color }}
+                />
+              )}
+              {index < sortedStages.length - 1 && (
+                <span
+                  aria-hidden
+                  className="absolute right-0 top-[13px] h-0.5 w-1/2"
+                  style={{ backgroundColor: stage.color }}
+                />
+              )}
+              <span
+                className="relative z-10 mx-auto flex h-7 w-7 items-center justify-center rounded-full border-2 bg-background text-xs font-bold"
+                style={{ borderColor: stage.color, color: stage.color }}
+              >
+                {index + 1}
+              </span>
+              <p className="relative z-10 mt-1.5 truncate text-[11px] font-medium text-muted-foreground">
+                {stage.name}
+              </p>
+            </li>
+          ))}
+        </ol> */}
+
+
+      </div>
+
       <div className="pipeline-scroll flex snap-x snap-mandatory gap-3 overflow-x-auto pb-4 lg:snap-none">
-        {sortedStages.map((stage) => {
+        {sortedStages.map((stage, index) => {
           const stageDeals = dealsByStage.get(stage.id) ?? [];
           const totalValue = stageDeals.reduce(
             (s, d) => s + Number(d.value || 0),
@@ -114,6 +167,7 @@ export function PipelineBoard({
             <StageColumn
               key={stage.id}
               stage={stage}
+              stepNumber={index + 1}
               deals={stageDeals}
               totalValue={totalValue}
               currency={defaultCurrency}
@@ -186,8 +240,10 @@ export function PipelineBoard({
   );
 }
 
+
 function StageColumn({
   stage,
+  stepNumber,
   deals,
   totalValue,
   currency,
@@ -195,6 +251,7 @@ function StageColumn({
   onEditDeal,
 }: {
   stage: PipelineStage;
+  stepNumber: number;
   deals: Deal[];
   totalValue: number;
   currency: string;
@@ -217,15 +274,24 @@ function StageColumn({
         className="-mx-4 -mt-4 h-[3px] rounded-t-xl"
         style={{ backgroundColor: stage.color }}
       />
-      <div className="flex items-center justify-between pt-3">
-        <h3 className="truncate text-sm font-semibold text-foreground">
+      <div className="flex items-center gap-2 pt-3">
+        {/* Step numeral — repeats the desktop stepper's numbering so the
+            column still reads as "step N of the service" on mobile,
+            where the connected stepper strip above is hidden. */}
+        <span
+          className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-bold text-white"
+          style={{ backgroundColor: stage.color }}
+        >
+          {stepNumber}
+        </span>
+        <h3 className="flex-1 truncate text-sm font-semibold text-foreground">
           {stage.name}
         </h3>
         <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
           {deals.length}
         </span>
       </div>
-      <p className="text-xs text-muted-foreground">
+      <p className="pl-7 text-xs text-muted-foreground">
         {formatCurrency(totalValue, currency)}
       </p>
 

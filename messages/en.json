@@ -46,7 +46,7 @@
     "notifications": "Notifications",
     "contacts": "Customers",
     "pipelines": "Bookings & Services",
-    "broadcasts": "Broadcasts",
+    "broadcasts": "Promotions",
     "automations": "Automations",
     "settings": "Settings",
     "openMenu": "Open menu",
@@ -497,13 +497,16 @@
       "toastNotLinkedToAccount": "Your profile is not linked to an account."
     },
     "board": {
-      "dropDealHere": "Drop an booking here",
-      "addDeal": "Add Booking"
+      "dropDealHere": "Drop a booking here",
+      "addDeal": "Add Booking",
+      "service": "Service",
+      "stepsCount": "{count} {count, plural, =1 {step} other {steps}}",
+      "bookingsCount": "{count} active {count, plural, =1 {booking} other {bookings}}"
     },
     "card": {
       "noContact": "No contact",
-      "won": "Won",
-      "lost": "Lost"
+      "won": "Completed",
+      "lost": "Canceled"
     },
     "form": {
       "editDeal": "Edit Booking",
@@ -513,17 +516,17 @@
       "contact": "Customer",
       "selectContact": "Select a customer...",
       "linkToConversation": "Link to Conversation",
-      "value": "Amount",
+      "value": "Price",
       "currency": "Currency",
-      "expectedCloseDate": "Expected Close Date",
-      "stage": "Stage",
+      "expectedCloseDate": "Appointment Date",
+      "stage": "Step",
       "assignedTo": "Assigned To",
       "unassigned": "Unassigned",
       "notes": "Notes",
       "notesPlaceholder": "Add notes...",
       "status": "Status",
-      "markAsWon": "Mark as Won",
-      "markAsLost": "Mark as Lost",
+      "markAsWon": "Mark as Completed",
+      "markAsLost": "Mark as Canceled",
       "reopenDeal": "Reopen booking",
       "cancel": "Cancel",
       "saving": "Saving...",
@@ -541,8 +544,8 @@
       "toastUpdated": "Booking updated",
       "toastCreated": "Booking created",
       "toastFailedStatus": "Failed to update booking status",
-      "toastMarkedWon": "Marked as won",
-      "toastMarkedLost": "Marked as lost",
+      "toastMarkedWon": "Marked as completed",
+      "toastMarkedLost": "Marked as canceled",
       "toastReopened": "Booking reopened",
       "toastFailedDelete": "Failed to delete booking",
       "toastDeleted": "Booking deleted"
@@ -589,8 +592,8 @@
   },
   "Broadcasts": {
     "page": {
-      "title": "Broadcasts",
-      "subtitle": "Send bulk messages to your contacts using approved templates.",
+      "title": "Broadcasting Offers & Promotions",
+      "subtitle": "Send bulk WhatsApp messages to your contacts using approved templates.",
       "newBroadcast": "New Broadcast",
       "noBroadcastsYet": "No broadcasts yet",
       "createFirst": "Create your first broadcast to reach your contacts at scale.",

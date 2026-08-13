@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { Pipeline, PipelineStage, Deal } from "@/types";
 import { PipelineBoard } from "@/components/pipelines/pipeline-board";
@@ -24,7 +24,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { GitBranch, Plus, ChevronDown, Settings } from "lucide-react";
+import { GitBranch, Plus, ChevronDown, Settings, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { useCan } from "@/hooks/use-can";
 import { useAuth } from "@/hooks/use-auth";
@@ -297,6 +297,11 @@ export default function PipelinesPage() {
 
   const selectedPipeline = pipelines.find((p) => p.id === selectedPipelineId);
 
+  const sortedStages = useMemo(
+    () => [...stages].sort((a, b) => a.position - b.position),
+    [stages],
+  );
+
   if (loading) {
     return (
       <div className="space-y-6">
@@ -316,9 +321,19 @@ export default function PipelinesPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
+
+      <PipelineAnalytics stages={stages} deals={deals} />
+
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           {/* Pipeline selector dropdown */}
+
+          <ServiceBadge
+            name={selectedPipeline?.name ?? ""}
+            stepCount={sortedStages.length}
+            bookingCount={deals.length}
+          />
+
           <DropdownMenu>
             <DropdownMenuTrigger
               className="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground hover:bg-muted transition-colors data-[popup-open]:bg-muted"
@@ -415,7 +430,6 @@ export default function PipelinesPage() {
         </div>
       ) : (
         <>
-          <PipelineAnalytics stages={stages} deals={deals} />
           <PipelineBoard
             stages={stages}
             deals={deals}
@@ -492,6 +506,71 @@ export default function PipelinesPage() {
         defaultStageId={defaultStageId}
         onSaved={refreshDeals}
       />
+    </div>
+  );
+}
+
+function ServiceBadge({
+  name,
+  stepCount,
+  bookingCount,
+}: {
+  name: string;
+  stepCount: number;
+  bookingCount: number;
+}) {
+  const t = useTranslations("Pipelines.board");
+  if (!name) return null;
+
+  return (
+    <div
+      title={name}
+      className="service-badge group relative ml-auto flex shrink-0 max-w-[260px] items-center gap-2.5 rounded-2xl border border-primary/25 bg-gradient-to-br from-primary/10 via-card to-card px-3.5 py-2 shadow-sm transition-shadow hover:shadow-md"
+    >
+      {/* Soft rotating conic glow behind the icon — the one bit of motion
+          on an otherwise static board, reserved for the page's single
+          most important label. Respects reduced-motion via the media
+          query below. */}
+      <span className="relative flex h-9 w-9 shrink-0 items-center justify-center">
+        <span aria-hidden className="service-badge-glow absolute inset-0 rounded-full" />
+        <span className="relative flex h-8 w-8 items-center justify-center rounded-full bg-primary/15 text-primary">
+          <Sparkles className="h-4 w-4" />
+        </span>
+      </span>
+
+      <div className="min-w-0 leading-tight">
+        <p className="text-[10px] font-semibold uppercase tracking-wider text-primary/80">
+          Selected {t("service")}
+        </p>
+        <p className="truncate text-sm font-bold text-foreground">{name}</p>
+        <p className="truncate text-[11px] text-muted-foreground">
+          {t("stepsCount", { count: stepCount })} · {t("bookingsCount", { count: bookingCount })}
+        </p>
+      </div>
+
+      <style jsx>{`
+        .service-badge-glow {
+          background: conic-gradient(
+            from 0deg,
+            color-mix(in srgb, var(--primary) 55%, transparent),
+            transparent 30%,
+            transparent 70%,
+            color-mix(in srgb, var(--primary) 55%, transparent)
+          );
+          filter: blur(6px);
+          animation: service-badge-spin 6s linear infinite;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .service-badge-glow {
+            animation: none;
+          }
+        }
+        @keyframes service-badge-spin {
+          to {
+            transform: rotate(360deg);
+          }
+        }
+      `}</style>
     </div>
   );
 }
