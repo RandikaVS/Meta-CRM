@@ -35,30 +35,29 @@ jobs:
       - name: SET COMMON ENVIRONMENT SPECIFIC VARIABLES
         run: |
           echo "GOOGLE_PROJECT=${{ secrets.GOOGLE_PROJECT }}" >> "$GITHUB_ENV"
-          echo "GOOGLE_REGION=${{ vars.GOOGLE_REGION || 'us-west2' }}" >> "$GITHUB_ENV"
+          echo "GOOGLE_REGION=${{ secrets.GOOGLE_REGION || 'us-west2' }}" >> "$GITHUB_ENV"
           echo "IMAGE_TAG=${{ github.sha }}-$(date +'%Y%m%d%H%M%S')" >> "$GITHUB_ENV"
 
       - name: SET ENVIRONMENT SPECIFIC VARIABLES FOR MAIN
         if: github.ref == 'refs/heads/main'
         run: |
-          echo "NEXT_PUBLIC_SITE_URL=${{ vars.PROD_NEXT_PUBLIC_SITE_URL }}" >> "$GITHUB_ENV"
+          echo "NEXT_PUBLIC_SITE_URL=${{ secrets.PROD_NEXT_PUBLIC_SITE_URL }}" >> "$GITHUB_ENV"
           echo "SERVICE_NAME=meta-crm-service-prod" >> "$GITHUB_ENV"
           echo "MIN_INSTANCES=1" >> "$GITHUB_ENV"
 
       - name: SET ENVIRONEMENT SPECIFIC VARIABLES FOR DEV
         if: github.ref == 'refs/heads/dev'
         run: |
-          echo "NEXT_PUBLIC_SITE_URL=${{ vars.DEV_NEXT_PUBLIC_SITE_URL }}" >> "$GITHUB_ENV"
+          echo "NEXT_PUBLIC_SITE_URL=${{ secrets.DEV_NEXT_PUBLIC_SITE_URL }}" >> "$GITHUB_ENV"
           echo "SERVICE_NAME=meta-crm-service-dev" >> "$GITHUB_ENV"
           echo "MIN_INSTANCES=0" >> "$GITHUB_ENV"
 
       - name: SET DOCKER IMAGE NAME
         run: |
-          echo "DOCKER_IMAGE=${GOOGLE_REGION}-docker.pkg.dev/${GOOGLE_PROJECT}/meta-crm-repo/${SERVICE_NAME}:${IMAGE_TAG}" >> "$GITHUB_ENV"
+          echo "DOCKER_IMAGE=${GOOGLE_REGION}-docker.pkg.dev/${secrets.GOOGLE_PROJECT}/meta-crm-repo/${SERVICE_NAME}:${IMAGE_TAG}" >> "$GITHUB_ENV"
 
       - name: BUILD AND PUSH THE DOCKER IMAGE
         env:
-          # Public NEXT_PUBLIC_* vars are inlined into the client bundle
           # at build time — they are not secrets, store them as repo/
           # environment "Variables", not "Secrets".
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
@@ -90,7 +89,7 @@ jobs:
             --concurrency=80 \
             --timeout=300 \
             --set-env-vars="NEXT_PUBLIC_SITE_URL=${NEXT_PUBLIC_SITE_URL},NEXT_PUBLIC_APP_LOCALE=en" \
-            --set-secrets="SUPABASE_SERVICE_ROLE_KEY=SUPABASE_SERVICE_ROLE_KEY:latest,ENCRYPTION_KEY=ENCRYPTION_KEY:latest,META_APP_SECRET=META_APP_SECRET:latest,META_APP_VERIFY_TOKEN=META_APP_VERIFY_TOKEN:latest"
+            --set-secrets="SUPABASE_SERVICE_ROLE_KEY=${secrets.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY}"
 
       - name: OUTPUT SERVICE URL
         run: |
