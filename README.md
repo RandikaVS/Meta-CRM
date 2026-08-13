@@ -98,6 +98,9 @@ later migrations assume earlier ones already ran.
 Production deployment (Docker + Google Cloud Run via GitHub Actions)
 is documented in [`docs/deployment-gcp.md`](./docs/deployment-gcp.md).
 
+gcloud secrets create SUPABASE_SERVICE_ROLE_KEY \
+  --replication-policy=automatic
+
 ## License
 
 [MIT](./LICENSE).
