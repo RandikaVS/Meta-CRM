@@ -114,6 +114,7 @@ function FunnelChart({ steps }: { steps: FunnelStep[] }) {
 
 const RECIPIENT_STATUSES: readonly RecipientStatus[] = [
   'pending',
+  'sending',
   'sent',
   'delivered',
   'read',
@@ -160,7 +161,10 @@ export default function BroadcastDetailPage() {
   const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
-    async function fetchData() {
+    let cancelled = false;
+    let pollTimer: ReturnType<typeof setTimeout> | null = null;
+
+    async function fetchData(isInitial: boolean) {
       try {
         const supabase = createClient();
 
@@ -171,6 +175,7 @@ export default function BroadcastDetailPage() {
           .single();
 
         if (bcError) throw bcError;
+        if (cancelled) return;
         setBroadcast(bc);
 
         const { data: recs, error: recsError } = await supabase
@@ -180,15 +185,31 @@ export default function BroadcastDetailPage() {
           .order('created_at', { ascending: false });
 
         if (recsError) throw recsError;
+        if (cancelled) return;
         setRecipients(recs ?? []);
+
+        // Delivery now happens server-side (deliverBroadcastChunk,
+        // possibly resumed later by the cron drain) rather than in this
+        // tab, so this page has no other way to learn it's progressing
+        // — poll while the campaign is actually in flight. Any status
+        // besides 'sending' (draft/scheduled/sent/failed) doesn't
+        // change on its own, so there's nothing to poll for.
+        if (bc?.status === 'sending') {
+          pollTimer = setTimeout(() => fetchData(false), 4000);
+        }
       } catch (err) {
+        if (cancelled) return;
         setError(err instanceof Error ? err.message : t('notFound'));
       } finally {
-        setLoading(false);
+        if (!cancelled && isInitial) setLoading(false);
       }
     }
 
-    fetchData();
+    fetchData(true);
+    return () => {
+      cancelled = true;
+      if (pollTimer) clearTimeout(pollTimer);
+    };
   }, [broadcastId]);
 
   const filteredRecipients = useMemo(

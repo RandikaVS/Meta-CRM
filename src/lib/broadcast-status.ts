@@ -52,6 +52,11 @@ export const recipientStatusConfig: Record<RecipientStatus, StatusDisplay> = {
     label: "pending",
     classes: "bg-slate-500/10 text-muted-foreground border-slate-500/20",
   },
+  sending: {
+    label: "sending",
+    classes: "bg-yellow-500/10 text-yellow-400 border-yellow-500/20",
+    pulse: true,
+  },
   sent: {
     label: "sent",
     classes: "bg-blue-500/10 text-blue-400 border-blue-500/20",

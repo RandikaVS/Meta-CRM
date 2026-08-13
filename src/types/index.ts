@@ -379,7 +379,11 @@ export interface Deal {
 }
 
 export type BroadcastStatus = 'draft' | 'scheduled' | 'sending' | 'sent' | 'failed';
-export type RecipientStatus = 'pending' | 'sent' | 'delivered' | 'read' | 'replied' | 'failed';
+// 'sending' is a transient claim state — a recipient row atomically
+// held by deliverBroadcastChunk mid-send (see broadcast-core.ts). It
+// should never be visible for more than a few seconds in normal
+// operation; it resolves to 'sent' or 'failed' once the send returns.
+export type RecipientStatus = 'pending' | 'sending' | 'sent' | 'delivered' | 'read' | 'replied' | 'failed';
 
 export interface Broadcast {
   id: string;
