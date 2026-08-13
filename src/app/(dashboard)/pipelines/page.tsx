@@ -364,9 +364,7 @@ export default function PipelinesPage() {
               )}
             </DropdownMenuContent>
           </DropdownMenu>
-        </div>
 
-        <div className="flex items-center gap-2">
           <GatedButton
             variant="outline"
             canAct={canEditSettings}
@@ -377,6 +375,11 @@ export default function PipelinesPage() {
             <Plus className="mr-1 h-4 w-4" />
             {t("addPipeline")}
           </GatedButton>
+          
+        </div>
+
+        <div className="flex items-center gap-2">
+
           <GatedButton
             canAct={canCreateDeals}
             gateReason="create deals"

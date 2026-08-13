@@ -98,7 +98,7 @@ const navItems: NavItem[] = [
   { href: "/broadcasts", labelKey: "broadcasts", icon: Radio },
   { href: "/automations", labelKey: "automations", icon: Zap },
   { href: "/flows", labelKey: "flows", icon: Workflow, beta: true },
-  { href: "/agents", labelKey: "aiAgents", icon: Bot },
+  // { href: "/agents", labelKey: "aixAgents", icon: Bot },
 ];
 
 const bottomNavItems = [
