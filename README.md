@@ -101,6 +101,14 @@ is documented in [`docs/deployment-gcp.md`](./docs/deployment-gcp.md).
 gcloud secrets create SUPABASE_SERVICE_ROLE_KEY \
   --replication-policy=automatic
 
+printf '%s' 'YOUR_NEW_SERVICE_ROLE_KEY' | \
+gcloud secrets versions add SUPABASE_SERVICE_ROLE_KEY \
+  --data-file=-
+
+gcloud secrets add-iam-policy-binding SUPABASE_SERVICE_ROLE_KEY \
+--member="serviceAccount:335587238445-compute@developer.gserviceaccount.com" \
+--role="roles/secretmanager.secretAccessor"
+
 ## License
 
 [MIT](./LICENSE).
