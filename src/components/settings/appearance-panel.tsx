@@ -7,6 +7,7 @@ import { MODES, THEMES, type Mode, type ThemeId } from "@/lib/themes";
 import { cn } from "@/lib/utils";
 import { useTranslations } from "next-intl";
 import { SettingsPanelHead } from "./settings-panel-head";
+import { BrandingPanel } from "./branding-panel";
 
 /**
  * Appearance panel — light/dark mode + accent-color picker.
@@ -73,6 +74,8 @@ export function AppearancePanel() {
           ))}
         </div>
       </div>
+
+      <BrandingPanel />
     </section>
   );
 }

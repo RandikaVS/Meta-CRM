@@ -14,31 +14,44 @@ import {
   STORAGE_KEY,
   THEME_IDS,
 } from "@/lib/themes";
+import { getAccountBranding } from "@/lib/branding";
 
 const inter = Inter({
   variable: "--font-sans",
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: {
-    default: "Style Heaven",
-    template: "%s — wacrm",
-  },
-  description: "A WhatsApp CRM template for sales and support teams.",
-  robots: {
-    index: false,
-    follow: false,
-  },
-  icons: {
-    icon: [{ url: "/icon" }],
-  },
-  formatDetection: {
-    email: false,
-    address: false,
-    telephone: false,
-  },
-};
+// The browser tab needs the signed-in user's account branding
+// (accounts.brand_name / logo_url, migration 037), but `useAuth()` is
+// a client hook backed by an AuthProvider that only mounts under the
+// dashboard layout — the root layout is a Server Component rendered
+// before any of that exists, so it can't call the hook (that's the
+// "Attempted to call useAuth() from the server" crash). getAccountBranding()
+// reads the same data straight from the server-side Supabase client
+// using the request's cookies; app/icon.tsx shares it for the favicon.
+export async function generateMetadata(): Promise<Metadata> {
+  const { brandName } = await getAccountBranding();
+  return {
+    title: {
+      default: brandName,
+      template: `%s — ${brandName}`,
+    },
+    description: "A WhatsApp CRM template for sales and support teams.",
+    robots: {
+      index: false,
+      follow: false,
+    },
+    icons: {
+      // An uploaded logo overrides the generated default (app/icon.tsx).
+      icon: [{ url: "/icon" }],
+    },
+    formatDetection: {
+      email: false,
+      address: false,
+      telephone: false,
+    },
+  };
+}
 
 export const viewport: Viewport = {
   themeColor: "#020617",
