@@ -58,10 +58,9 @@ jobs:
 
       - name: BUILD AND PUSH THE DOCKER IMAGE
         env:
-          # at build time — they are not secrets, store them as repo/
-          # environment "Variables", not "Secrets".
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY }}
         run: |
           gcloud auth configure-docker ${GOOGLE_REGION}-docker.pkg.dev --quiet
 
@@ -70,6 +69,7 @@ jobs:
             --build-arg NEXT_PUBLIC_SUPABASE_ANON_KEY="$NEXT_PUBLIC_SUPABASE_ANON_KEY" \
             --build-arg NEXT_PUBLIC_SITE_URL="$NEXT_PUBLIC_SITE_URL" \
             --build-arg NEXT_PUBLIC_APP_LOCALE="en" \
+            --build-arg SUPABASE_SERVICE_ROLE_KEY="$SUPABASE_SERVICE_ROLE_KEY" \
             -t "${DOCKER_IMAGE}" .
 
           docker push "${DOCKER_IMAGE}"
@@ -89,7 +89,7 @@ jobs:
             --concurrency=80 \
             --timeout=300 \
             --set-env-vars="NEXT_PUBLIC_SITE_URL=${NEXT_PUBLIC_SITE_URL},NEXT_PUBLIC_APP_LOCALE=en" \
-            --set-secrets="SUPABASE_SERVICE_ROLE_KEY=${{ secrets.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY }}"
+            --set-secrets="SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}"
 
       - name: OUTPUT SERVICE URL
         run: |
