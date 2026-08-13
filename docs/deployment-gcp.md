@@ -38,11 +38,26 @@ gcloud iam service-accounts keys create key.json \
   --iam-account="meta-crm-deployer@${GOOGLE_PROJECT}.iam.gserviceaccount.com"
 ```
 
-`key.json` is the credential you paste into the
-`GOOGLE_APPLICATION_CREDENTIALS` GitHub secret below — delete the local
-copy afterwards. (If your org requires Workload Identity Federation
-instead of long-lived JSON keys, swap the `auth` step in the workflow
-for `google-github-actions/auth@v2` with `workload_identity_provider`
+Store `key.json` as the `GOOGLE_APPLICATION_CREDENTIALS` GitHub secret
+**base64-encoded**, not as raw pasted JSON:
+
+```bash
+base64 -i key.json | gh secret set GOOGLE_APPLICATION_CREDENTIALS
+# no gh CLI? macOS: base64 -i key.json | pbcopy, then paste into
+# Settings → Secrets and variables → Actions → New repository secret
+rm key.json
+```
+
+Pasting the multi-line JSON directly into the GitHub secret UI is what
+causes `Error: ... failed to parse service account key JSON
+credentials: bad control character in string literal` — the UI can
+re-wrap or otherwise mangle the escaped `\n` sequences inside the PEM
+private key. Base64-encoding first sidesteps that entirely; the
+workflow's "DECODE SERVICE ACCOUNT KEY" step decodes it back to JSON
+before handing it to `google-github-actions/auth`. (If your org
+requires Workload Identity Federation instead of long-lived JSON keys,
+swap the `auth` step in the workflow for `google-github-actions/auth@v2`
+with `workload_identity_provider`
 — no other changes needed.)
 
 ## Secrets in Secret Manager

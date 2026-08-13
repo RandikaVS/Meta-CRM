@@ -24,11 +24,27 @@ jobs:
       - name: CODE CHECK-OUT
         uses: actions/checkout@v4
 
+      - name: DECODE SERVICE ACCOUNT KEY
+        # GOOGLE_APPLICATION_CREDENTIALS holds the base64 of the raw
+        # service-account key.json (see docs/deployment-gcp.md). Storing
+        # it base64-encoded — rather than pasting the multi-line JSON
+        # directly into the GitHub secret UI — avoids the UI mangling
+        # the escaped `\n` sequences inside the PEM private key, which
+        # otherwise breaks JSON parsing in the auth step ("bad control
+        # character in string literal").
+        id: decode-key
+        run: |
+          {
+            echo 'json<<GCP_KEY_EOF'
+            echo "${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}" | base64 --decode
+            echo 'GCP_KEY_EOF'
+          } >> "$GITHUB_OUTPUT"
+
       - name: AUTHENTICATE TO GOOGLE CLOUD
         uses: google-github-actions/auth@v2
         with:
           project_id: ${{ secrets.GOOGLE_PROJECT }}
-          credentials_json: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
+          credentials_json: ${{ steps.decode-key.outputs.json }}
 
       - name: INSTALL THE GCLOUD CLI
         uses: google-github-actions/setup-gcloud@v2
