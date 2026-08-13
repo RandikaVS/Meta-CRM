@@ -38,27 +38,26 @@ gcloud iam service-accounts keys create key.json \
   --iam-account="meta-crm-deployer@${GOOGLE_PROJECT}.iam.gserviceaccount.com"
 ```
 
-Store `key.json` as the `GOOGLE_APPLICATION_CREDENTIALS` GitHub secret
-**base64-encoded**, not as raw pasted JSON:
+Store the **raw contents** of `key.json` as the `GOOGLE_APPLICATION_CREDENTIALS`
+GitHub secret — `google-github-actions/auth@v2`'s `credentials_json`
+input takes the service-account JSON directly, no encoding needed:
 
 ```bash
-base64 -i key.json | gh secret set GOOGLE_APPLICATION_CREDENTIALS
-# no gh CLI? macOS: base64 -i key.json | pbcopy, then paste into
-# Settings → Secrets and variables → Actions → New repository secret
+gh secret set GOOGLE_APPLICATION_CREDENTIALS < key.json
+# no gh CLI? Settings → Secrets and variables → Actions → New repository
+# secret, then paste the full contents of key.json
 rm key.json
 ```
 
-Pasting the multi-line JSON directly into the GitHub secret UI is what
-causes `Error: ... failed to parse service account key JSON
-credentials: bad control character in string literal` — the UI can
-re-wrap or otherwise mangle the escaped `\n` sequences inside the PEM
-private key. Base64-encoding first sidesteps that entirely; the
-workflow's "DECODE SERVICE ACCOUNT KEY" step decodes it back to JSON
-before handing it to `google-github-actions/auth`. (If your org
-requires Workload Identity Federation instead of long-lived JSON keys,
-swap the `auth` step in the workflow for `google-github-actions/auth@v2`
-with `workload_identity_provider`
-— no other changes needed.)
+If pasting the multi-line JSON through the GitHub web UI ever produces
+`Error: ... failed to parse service account key JSON credentials: bad
+control character in string literal`, the UI mangled the escaped `\n`
+sequences inside the PEM private key on paste — use `gh secret set`
+(above) instead, which sends the file content byte-for-byte and avoids
+that. Do **not** base64-encode the value; `credentials_json` expects
+JSON as-is. (If your org requires Workload Identity Federation instead
+of long-lived JSON keys, swap the `auth` step's `credentials_json` for
+`workload_identity_provider` — no other changes needed.)
 
 ## Secrets in Secret Manager
 

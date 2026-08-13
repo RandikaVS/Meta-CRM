@@ -24,21 +24,13 @@ jobs:
         uses: actions/checkout@v2
 
 
-      - name: DECODE SERVICE ACCOUNT KEY
-        id: decode-key
-        run: |
-          key_json="$(echo "${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}" | base64 --decode)"
-          echo "::add-mask::$key_json"
-          {
-            echo "credentials_json<<EOF"
-            echo "$key_json"
-            echo "EOF"
-          } >> "$GITHUB_OUTPUT"
-
       - name: INSTALL THE GCLOUD CLI
         uses: google-github-actions/auth@v2
         with:
-          credentials_json: ${{ steps.decode-key.outputs.credentials_json }}
+          # GOOGLE_APPLICATION_CREDENTIALS holds the raw service-account
+          # key JSON (not base64) — auth@v2's credentials_json takes it
+          # directly.
+          credentials_json: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
           project_id: ${{ secrets.GOOGLE_PROJECT }}
 
       - uses: google-github-actions/setup-gcloud@v2
