@@ -1,0 +1,100 @@
+name: Deploy Meta CRM
+
+on:
+  push:
+    branches:
+      - "main"
+      - "dev"
+
+# Cancel an older in-flight deploy on the same branch if a newer push
+# lands before it finishes — avoids two builds racing to deploy the
+# same Cloud Run service.
+concurrency:
+  group: deploy-${{ github.ref_name }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: ${{ github.ref_name == 'main' && 'production' || 'development' }}
+    steps:
+      - name: CODE CHECK-OUT
+        uses: actions/checkout@v4
+
+      - name: AUTHENTICATE TO GOOGLE CLOUD
+        uses: google-github-actions/auth@v2
+        with:
+          project_id: ${{ secrets.GOOGLE_PROJECT }}
+          credentials_json: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
+
+      - name: INSTALL THE GCLOUD CLI
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: SET COMMON ENVIRONMENT SPECIFIC VARIABLES
+        run: |
+          echo "GOOGLE_PROJECT=${{ secrets.GOOGLE_PROJECT }}" >> "$GITHUB_ENV"
+          echo "GOOGLE_REGION=${{ vars.GOOGLE_REGION || 'us-west2' }}" >> "$GITHUB_ENV"
+          echo "IMAGE_TAG=${{ github.sha }}-$(date +'%Y%m%d%H%M%S')" >> "$GITHUB_ENV"
+
+      - name: SET ENVIRONMENT SPECIFIC VARIABLES FOR MAIN
+        if: github.ref == 'refs/heads/main'
+        run: |
+          echo "NEXT_PUBLIC_SITE_URL=${{ vars.PROD_NEXT_PUBLIC_SITE_URL }}" >> "$GITHUB_ENV"
+          echo "SERVICE_NAME=meta-crm-service-prod" >> "$GITHUB_ENV"
+          echo "MIN_INSTANCES=1" >> "$GITHUB_ENV"
+
+      - name: SET ENVIRONEMENT SPECIFIC VARIABLES FOR DEV
+        if: github.ref == 'refs/heads/dev'
+        run: |
+          echo "NEXT_PUBLIC_SITE_URL=${{ vars.DEV_NEXT_PUBLIC_SITE_URL }}" >> "$GITHUB_ENV"
+          echo "SERVICE_NAME=meta-crm-service-dev" >> "$GITHUB_ENV"
+          echo "MIN_INSTANCES=0" >> "$GITHUB_ENV"
+
+      - name: SET DOCKER IMAGE NAME
+        run: |
+          echo "DOCKER_IMAGE=${GOOGLE_REGION}-docker.pkg.dev/${GOOGLE_PROJECT}/meta-crm-repo/${SERVICE_NAME}:${IMAGE_TAG}" >> "$GITHUB_ENV"
+
+      - name: BUILD AND PUSH THE DOCKER IMAGE
+        env:
+          # Public NEXT_PUBLIC_* vars are inlined into the client bundle
+          # at build time — they are not secrets, store them as repo/
+          # environment "Variables", not "Secrets".
+          NEXT_PUBLIC_SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ vars.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+        run: |
+          gcloud auth configure-docker ${GOOGLE_REGION}-docker.pkg.dev --quiet
+
+          docker build \
+            --build-arg NEXT_PUBLIC_SUPABASE_URL="$NEXT_PUBLIC_SUPABASE_URL" \
+            --build-arg NEXT_PUBLIC_SUPABASE_ANON_KEY="$NEXT_PUBLIC_SUPABASE_ANON_KEY" \
+            --build-arg NEXT_PUBLIC_SITE_URL="$NEXT_PUBLIC_SITE_URL" \
+            --build-arg NEXT_PUBLIC_APP_LOCALE="en" \
+            -t "${DOCKER_IMAGE}" .
+
+          docker push "${DOCKER_IMAGE}"
+
+      - name: DEPLOY TO GOOGLE CLOUD RUN
+        run: |
+          gcloud run deploy "$SERVICE_NAME" \
+            --image="${DOCKER_IMAGE}" \
+            --region="${GOOGLE_REGION}" \
+            --platform=managed \
+            --allow-unauthenticated \
+            --port=8080 \
+            --min-instances="${MIN_INSTANCES}" \
+            --max-instances=10 \
+            --memory=512Mi \
+            --cpu=1 \
+            --concurrency=80 \
+            --timeout=300 \
+            --set-env-vars="NEXT_PUBLIC_SITE_URL=${NEXT_PUBLIC_SITE_URL},NEXT_PUBLIC_APP_LOCALE=en" \
+            --set-secrets="SUPABASE_SERVICE_ROLE_KEY=SUPABASE_SERVICE_ROLE_KEY:latest,ENCRYPTION_KEY=ENCRYPTION_KEY:latest,META_APP_SECRET=META_APP_SECRET:latest,META_APP_VERIFY_TOKEN=META_APP_VERIFY_TOKEN:latest"
+
+      - name: OUTPUT SERVICE URL
+        run: |
+          gcloud run services describe "$SERVICE_NAME" \
+            --region="${GOOGLE_REGION}" \
+            --format="value(status.url)"

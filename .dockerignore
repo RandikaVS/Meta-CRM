@@ -1,0 +1,16 @@
+node_modules
+.next
+.git
+.github
+.env*
+!.env.local.example
+npm-debug.log*
+Dockerfile
+.dockerignore
+docs
+supabase
+mcp-server
+*.md
+.vscode
+.idea
+coverage

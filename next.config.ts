@@ -65,6 +65,15 @@ const SECURITY_HEADERS = [
 
 const nextConfig: NextConfig = {
   /**
+   * Emit a minimal, self-contained `.next/standalone` server (only the
+   * production `node_modules` a request actually touches, traced via
+   * `next build`). Required for the Docker/Cloud Run image — without
+   * it the runtime stage would need the full `node_modules` tree.
+   * See node_modules/next/dist/docs/01-app/01-getting-started/17-deploying.md
+   */
+  output: "standalone",
+
+  /**
    * Cross-origin dev access (Next.js 16).
    *
    * Next 16 blocks requests to dev-only resources (`/_next/*` internals,
