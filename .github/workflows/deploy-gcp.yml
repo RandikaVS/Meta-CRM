@@ -24,13 +24,15 @@ jobs:
       - name: CODE CHECK-OUT
         uses: actions/checkout@v4
 
-      - name: INSTALL THE GCLOUD CLI
-        uses: google-github-actions/setup-gcloud@v0
+
+      - name: AUTHENTICATE TO GOOGLE CLOUD
+        uses: google-github-actions/auth@v2
         with:
           project_id: ${{ secrets.GOOGLE_PROJECT }}
-          service_account_key: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
-          install_components: 'gke-gcloud-auth-plugin'
-          export_default_credentials: true
+          credentials_json: ${{ steps.decode-key.outputs.json }}
+
+      - name: INSTALL THE GCLOUD CLI
+        uses: google-github-actions/setup-gcloud@v2
 
       - name: SET COMMON ENVIRONMENT SPECIFIC VARIABLES
         run: |
