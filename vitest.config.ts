@@ -1,9 +1,16 @@
 import { defineConfig } from "vitest/config";
+import path from "node:path";
 
 export default defineConfig({
   resolve: {
-    // tsconfigPaths: true,
-    
+    // Mirrors tsconfig.json's "@/*" -> "./src/*" path mapping. Was
+    // previously unset, which silently broke every test file that
+    // imports through the `@/` alias (18/66 files failing to even
+    // load, "Cannot find package '@/...'") — `npm test` exiting 0
+    // regardless, since vitest only reports the files it could run.
+    alias: {
+      "@": path.resolve(__dirname, "./src"),
+    },
   },
   test: {
     environment: "node",

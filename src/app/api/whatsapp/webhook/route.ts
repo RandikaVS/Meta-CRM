@@ -611,6 +611,35 @@ async function processMessage(
     return
   }
 
+  // Idempotency guard against Meta's webhook retries. Meta redelivers a
+  // webhook whenever our ack is slow or a delivery attempt errors, and
+  // `messages.message_id` is intentionally NOT unique in the schema
+  // (Meta ids repeat across numbers — see migration 036) so a naive
+  // insert-on-every-delivery would create a duplicate bubble in the
+  // thread every time a retry lands. Scope the lookup to this
+  // conversation + inbound sender so it can't false-positive against an
+  // outbound message that happens to reuse the same id space.
+  //
+  // Done before parseMessageContent so a retried delivery doesn't also
+  // re-verify/re-fetch media with Meta.
+  const { data: existingMessage, error: dupCheckError } = await supabaseAdmin()
+    .from('messages')
+    .select('id')
+    .eq('conversation_id', conversation.id)
+    .eq('message_id', message.id)
+    .eq('sender_type', 'customer')
+    .maybeSingle()
+
+  if (dupCheckError) {
+    // Fail open on the check itself — an infra hiccup on this SELECT
+    // must not drop the message. Worst case (rare double-error) is the
+    // pre-existing duplicate-insert behavior, not a lost message.
+    console.error('[webhook] dedupe check failed, proceeding with insert:', dupCheckError.message)
+  } else if (existingMessage) {
+    console.warn('[webhook] duplicate delivery for message_id, skipping:', message.id)
+    return
+  }
+
   // Parse message content based on type
   const { contentText, mediaUrl, mediaType, interactiveReplyId } =
     await parseMessageContent(message, accessToken)
