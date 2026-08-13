@@ -10,7 +10,7 @@
 # and the "Docker" section of the self-hosting guide.
 # ---------------------------------------------------------------------------
 
-ARG NODE_VERSION=22-alpine
+ARG NODE_VERSION=24-alpine
 
 # ---- deps -------------------------------------------------------------
 FROM node:${NODE_VERSION} AS deps
