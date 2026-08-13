@@ -49,10 +49,10 @@ jobs:
           echo "MIN_INSTANCES=1" >> "$GITHUB_ENV"
 
       - name: SET ENVIRONEMENT SPECIFIC VARIABLES FOR DEV
-        if: github.ref == 'refs/heads/dev'
+        if: github.ref == 'refs/heads/saloon-pre-prod'
         run: |
           echo "NEXT_PUBLIC_SITE_URL=${{ vars.DEV_NEXT_PUBLIC_SITE_URL }}" >> "$GITHUB_ENV"
-          echo "SERVICE_NAME=meta-crm-service-dev" >> "$GITHUB_ENV"
+          echo "SERVICE_NAME=meta-crm-service-saloon-pre-prod" >> "$GITHUB_ENV"
           echo "MIN_INSTANCES=0" >> "$GITHUB_ENV"
 
       - name: SET DOCKER IMAGE NAME
