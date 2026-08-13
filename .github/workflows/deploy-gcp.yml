@@ -9,12 +9,12 @@ on:
 # Cancel an older in-flight deploy on the same branch if a newer push
 # lands before it finishes — avoids two builds racing to deploy the
 # same Cloud Run service.
-concurrency:
-  group: deploy-${{ github.ref_name }}
-  cancel-in-progress: true
+# concurrency:
+#   group: deploy-${{ github.ref_name }}
+#   cancel-in-progress: true
 
-permissions:
-  contents: read
+# permissions:
+#   contents: read
 
 jobs:
   deploy:
