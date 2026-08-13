@@ -24,40 +24,13 @@ jobs:
       - name: CODE CHECK-OUT
         uses: actions/checkout@v4
 
-      - name: DECODE SERVICE ACCOUNT KEY
-        # GOOGLE_APPLICATION_CREDENTIALS holds the base64 of the raw
-        # service-account key.json (see docs/deployment-gcp.md). Storing
-        # it base64-encoded — rather than pasting the multi-line JSON
-        # directly into the GitHub secret UI — avoids the UI mangling
-        # the escaped `\n` sequences inside the PEM private key, which
-        # otherwise breaks JSON parsing in the auth step ("bad control
-        # character in string literal").
-        id: decode-key
-        env:
-          # Passed via `env:`, not spliced into the script as
-          # `${{ secrets.* }}` — the secret's raw content (quotes,
-          # newlines, `$`, backticks, ...) would otherwise be
-          # interpreted as shell syntax and can break the script (e.g.
-          # "unexpected EOF while looking for matching `"'" if it still
-          # contains literal quotes/newlines, which is also the sign
-          # this secret hasn't been re-created as base64 yet — see
-          # docs/deployment-gcp.md).
-          GCP_SA_KEY_B64: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
-        run: |
-          {
-            echo 'json<<private_key'
-            echo "$GCP_SA_KEY_B64" | base64 --decode
-            echo 'private_key'
-          } >> "$GITHUB_OUTPUT"
-
-      - name: AUTHENTICATE TO GOOGLE CLOUD
-        uses: google-github-actions/auth@v2
+      - name: INSTALL THE GCLOUD CLI
+        uses: google-github-actions/setup-gcloud@v0
         with:
           project_id: ${{ secrets.GOOGLE_PROJECT }}
-          credentials_json: ${{ steps.decode-key.outputs.json }}
-
-      - name: INSTALL THE GCLOUD CLI
-        uses: google-github-actions/setup-gcloud@v2
+          service_account_key: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
+          install_components: 'gke-gcloud-auth-plugin'
+          export_default_credentials: true
 
       - name: SET COMMON ENVIRONMENT SPECIFIC VARIABLES
         run: |
