@@ -94,11 +94,23 @@ runtime config):
 
 | Variable | Notes |
 |---|---|
-| `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anon key |
+| `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL — **required**, see below |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anon key — **required**, see below |
 | `GOOGLE_REGION` | defaults to `us-west2` if unset |
 | `PROD_NEXT_PUBLIC_SITE_URL` | canonical URL of the `main` deploy |
 | `DEV_NEXT_PUBLIC_SITE_URL` | canonical URL of the `dev` deploy |
+
+> `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` aren't
+> just for runtime — they're passed as Docker **build args** and get
+> compiled into the client bundle by `next build`. Several client
+> components construct a Supabase client at module scope, and Next 16
+> prerenders client components too, so if these are missing or empty
+> the image **fails to build**, not just to run. The Dockerfile checks
+> for this and fails fast with a clear error rather than the raw
+> `@supabase/ssr: Your project's URL and API key are required` stack
+> trace. If you hit that error, these two variables aren't set (or
+> aren't set on the environment — `production`/`development` — the
+> workflow run used).
 
 The workflow defines two GitHub **Environments**, `production` (for
 pushes to `main`) and `development` (for pushes to `dev`) — use

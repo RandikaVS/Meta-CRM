@@ -40,6 +40,16 @@ ENV NEXT_PUBLIC_SUPABASE_URL=$NEXT_PUBLIC_SUPABASE_URL \
     NEXT_PUBLIC_APP_LOCALE=$NEXT_PUBLIC_APP_LOCALE \
     NEXT_TELEMETRY_DISABLED=1
 
+# Fail fast with a clear message instead of a cryptic Supabase stack
+# trace ~20s into `next build`: several client components (e.g.
+# forgot-password) construct a Supabase client at module scope, and
+# Next 16 prerenders client components too, so a missing/empty URL or
+# anon key breaks the build, not just runtime.
+RUN if [ -z "$NEXT_PUBLIC_SUPABASE_URL" ] || [ -z "$NEXT_PUBLIC_SUPABASE_ANON_KEY" ]; then \
+      echo "ERROR: NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY build args are required (pass via --build-arg, or set the GitHub Actions repo/environment Variables — see docs/deployment-gcp.md)." >&2; \
+      exit 1; \
+    fi
+
 RUN npm run build
 
 # ---- runtime --------------------------------------------------------------
