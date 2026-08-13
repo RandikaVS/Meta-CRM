@@ -1572,7 +1572,28 @@
       "useMode": "{mode} 모드 사용",
       "active": "사용 중",
       "accentColor": "강조 색상",
-      "useTheme": "{name} 테마 사용"
+      "useTheme": "{name} 테마 사용",
+      "branding": {
+        "title": "사이드바 브랜딩",
+        "description": "사이드바에 표시되는 기본 아이콘과 앱 이름을 원하는 것으로 바꿉니다. 이 계정의 모든 사용자에게 적용됩니다.",
+        "uploadLogo": "로고 업로드",
+        "changeLogo": "로고 변경",
+        "remove": "제거",
+        "logoHint": "PNG, JPG, WEBP, GIF, SVG 지원. 최대 2MB.",
+        "logoAlt": "사이드바 로고",
+        "systemTitle": "시스템 제목",
+        "systemTitlePlaceholder": "BizApp CRM",
+        "adminOnlyHint": "계정 관리자만 브랜딩을 변경할 수 있습니다.",
+        "save": "브랜딩 저장",
+        "saving": "저장 중…",
+        "saveSuccess": "브랜딩이 업데이트되었습니다.",
+        "saveFailed": "브랜딩을 저장하지 못했습니다: {message}",
+        "uploadFailed": "로고를 업로드하지 못했습니다: {message}",
+        "unsupportedImage": "지원하지 않는 파일 형식",
+        "unsupportedImageDesc": "PNG, JPG, WEBP, GIF, SVG 이미지를 선택해주세요.",
+        "imageTooLarge": "이미지가 너무 큽니다",
+        "imageTooLargeDesc": "2MB 미만의 이미지를 선택해주세요."
+      }
     },
     "security": {
       "title": "로그인 & 보안",

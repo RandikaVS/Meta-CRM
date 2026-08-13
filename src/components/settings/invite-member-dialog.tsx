@@ -280,10 +280,11 @@ export function InviteMemberDialog({
                     <SelectItem value="admin">{tRoles('admin')}</SelectItem>
                     <SelectItem value="agent">{tRoles('agent')}</SelectItem>
                     <SelectItem value="viewer">{tRoles('viewer')}</SelectItem>
+                    <SelectItem value="owner">{tRoles('owner')}</SelectItem>
                   </SelectContent>
                 </Select>
                 <p className="text-xs text-muted-foreground">
-                  {tRoles(`${role}Hint` as 'adminHint' | 'agentHint' | 'viewerHint')}
+                  {tRoles(`${role}Hint` as 'adminHint' | 'agentHint' | 'viewerHint' | 'ownerHint')}
                 </p>
               </div>
 

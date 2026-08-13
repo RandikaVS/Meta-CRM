@@ -15,7 +15,7 @@
     "createAccount": "Create account"
   },
   "Sidebar": {
-    "title": "Style Heaven",
+    "title": "BizApp CRM",
     "dashboard": "Dashboard",
     "inbox": "Inbox",
     "notifications": "Notifications",
@@ -23,7 +23,7 @@
     "pipelines": "Bookings",
     "broadcasts": "Promotions",
     "automations": "WhatsApp Automations",
-    "flows": "Automation Builder",
+    "flows": "Conversation Flows",
     "aiAgents": "AI Agents",
     "settings": "Settings",
     "beta": "Beta",
@@ -47,7 +47,8 @@
     "contacts": "Customers",
     "pipelines": "Bookings & Services",
     "broadcasts": "Promotions",
-    "automations": "Automations",
+    "automations": "WhatsApp Automations",
+    "flows": "Conversation Flows",
     "settings": "Settings",
     "openMenu": "Open menu",
     "openAccountMenu": "Open account menu",
@@ -981,9 +982,9 @@
   },
   "Flows": {
     "list": {
-      "title": "Flows",
+      "title": "Conversation Flows",
       "beta": "Beta",
-      "description": "Build branching, button-driven WhatsApp conversations. Useful for menus, FAQs, and triage before a human steps in.",
+      "description": "Create automated WhatsApp conversations that guide customers to bookings, services, offers, or a staff member",
       "newFlow": "New flow",
       "statusDraft": "Draft",
       "statusActive": "Active",
@@ -1574,7 +1575,28 @@
       "useMode": "Use {mode} mode",
       "active": "Active",
       "accentColor": "Accent color",
-      "useTheme": "Use {name} theme"
+      "useTheme": "Use {name} theme",
+      "branding": {
+        "title": "Sidebar branding",
+        "description": "Replace the default icon and app name shown in the sidebar with your own. Applies to everyone in this account.",
+        "uploadLogo": "Upload logo",
+        "changeLogo": "Change logo",
+        "remove": "Remove",
+        "logoHint": "PNG, JPG, WEBP, GIF, or SVG. Up to 2 MB.",
+        "logoAlt": "Sidebar logo",
+        "systemTitle": "System title",
+        "systemTitlePlaceholder": "Style Heaven",
+        "adminOnlyHint": "Only account admins can change branding.",
+        "save": "Save branding",
+        "saving": "Saving…",
+        "saveSuccess": "Branding updated.",
+        "saveFailed": "Couldn't save branding: {message}",
+        "uploadFailed": "Couldn't upload logo: {message}",
+        "unsupportedImage": "Unsupported file type",
+        "unsupportedImageDesc": "Please choose a PNG, JPG, WEBP, GIF, or SVG image.",
+        "imageTooLarge": "Image too large",
+        "imageTooLargeDesc": "Please choose an image under 2 MB."
+      }
     },
     "security": {
       "title": "Login & security",
