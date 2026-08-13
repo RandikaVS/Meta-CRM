@@ -41,10 +41,10 @@ jobs:
       - name: SET ENVIRONMENT SPECIFIC VARIABLES FOR MAIN
         if: github.ref == 'refs/heads/main'
         run: |
-          echo "NEXT_PUBLIC_SITE_URL=${{ vars.PROD_NEXT_PUBLIC_SITE_URL || http://localhost:3000/ }}" >> "$GITHUB_ENV"
+          echo "NEXT_PUBLIC_SITE_URL=${{ vars.PROD_NEXT_PUBLIC_SITE_URL }}" >> "$GITHUB_ENV"
           echo "SERVICE_NAME=meta-crm-service-prod" >> "$GITHUB_ENV"
           echo "MIN_INSTANCES=1" >> "$GITHUB_ENV"
-  
+
       - name: SET ENVIRONEMENT SPECIFIC VARIABLES FOR DEV
         if: github.ref == 'refs/heads/dev'
         run: |
