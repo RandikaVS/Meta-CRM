@@ -35,7 +35,7 @@ jobs:
       - name: SET COMMON ENVIRONMENT SPECIFIC VARIABLES
         run: |
           echo "GOOGLE_PROJECT=${{ secrets.GOOGLE_PROJECT }}" >> "$GITHUB_ENV"
-          echo "GOOGLE_REGION=${{ secrets.GOOGLE_REGION || 'us-west2' }}" >> "$GITHUB_ENV"
+          echo "GOOGLE_REGION=${{ secrets.GOOGLE_REGION }}" >> "$GITHUB_ENV"
           echo "IMAGE_TAG=${{ github.sha }}-$(date +'%Y%m%d%H%M%S')" >> "$GITHUB_ENV"
 
       - name: SET ENVIRONMENT SPECIFIC VARIABLES FOR MAIN
@@ -54,7 +54,7 @@ jobs:
 
       - name: SET DOCKER IMAGE NAME
         run: |
-          echo "DOCKER_IMAGE=${GOOGLE_REGION}-docker.pkg.dev/${secrets.GOOGLE_PROJECT}/meta-crm-repo/${SERVICE_NAME}:${IMAGE_TAG}" >> "$GITHUB_ENV"
+          echo "DOCKER_IMAGE=${GOOGLE_REGION}-docker.pkg.dev/${GOOGLE_PROJECT}/meta-crm-repo/${SERVICE_NAME}:${IMAGE_TAG}" >> "$GITHUB_ENV"
 
       - name: BUILD AND PUSH THE DOCKER IMAGE
         env:
