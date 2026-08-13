@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - "main"
-      - "dev"
+      - "saloon-pre-prod"
 
 # Cancel an older in-flight deploy on the same branch if a newer push
 # lands before it finishes — avoids two builds racing to deploy the

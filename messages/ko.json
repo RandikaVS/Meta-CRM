@@ -497,7 +497,10 @@
     },
     "board": {
       "dropDealHere": "여기에 딜을 놓으세요",
-      "addDeal": "딜 추가"
+      "addDeal": "딜 추가",
+      "service": "서비스",
+      "stepsCount": "{count}단계",
+      "bookingsCount": "진행 중 {count}건"
     },
     "card": {
       "noContact": "연락처 없음",
