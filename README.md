@@ -109,6 +109,13 @@ gcloud secrets add-iam-policy-binding SUPABASE_SERVICE_ROLE_KEY \
 --member="serviceAccount:335587238445-compute@developer.gserviceaccount.com" \
 --role="roles/secretmanager.secretAccessor"
 
+for name in ENCRYPTION_KEY META_APP_SECRET META_APP_VERIFY_TOKEN; do
+  gcloud secrets add-iam-policy-binding "$name" \
+    --member="serviceAccount:335587238445-compute@developer.gserviceaccount.com" \
+    --role="roles/secretmanager.secretAccessor"
+done
+
+
 ## License
 
 [MIT](./LICENSE).
