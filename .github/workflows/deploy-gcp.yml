@@ -45,9 +45,9 @@ jobs:
           GCP_SA_KEY_B64: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
         run: |
           {
-            echo 'json<<GCP_KEY_EOF'
+            echo 'json<<private_key'
             echo "$GCP_SA_KEY_B64" | base64 --decode
-            echo 'GCP_KEY_EOF'
+            echo 'private_key'
           } >> "$GITHUB_OUTPUT"
 
       - name: AUTHENTICATE TO GOOGLE CLOUD
