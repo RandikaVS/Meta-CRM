@@ -24,37 +24,42 @@ jobs:
         uses: actions/checkout@v2
 
 
+      - name: DECODE SERVICE ACCOUNT KEY
+        id: decode-key
+        run: |
+          key_json="$(echo "${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}" | base64 --decode)"
+          echo "::add-mask::$key_json"
+          {
+            echo "credentials_json<<EOF"
+            echo "$key_json"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
       - name: INSTALL THE GCLOUD CLI
         uses: google-github-actions/auth@v2
         with:
-          credentials_json: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
+          credentials_json: ${{ steps.decode-key.outputs.credentials_json }}
+          project_id: ${{ secrets.GOOGLE_PROJECT }}
 
       - uses: google-github-actions/setup-gcloud@v2
-
-        # uses: google-github-actions/setup-gcloud@v0
-        # with:
-        #   project_id: ${{ secrets.GOOGLE_PROJECT }}
-        #   service_account_key: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS }}
-        #   install_components: 'gke-gcloud-auth-plugin'
-        #   export_default_credentials: true
 
       - name: SET COMMON ENVIRONMENT SPECIFIC VARIABLES
         run: |
           echo "GOOGLE_PROJECT=${{ secrets.GOOGLE_PROJECT }}" >> "$GITHUB_ENV"
-          echo "GOOGLE_REGION=${{ secrets.GOOGLE_REGION }}" >> "$GITHUB_ENV"
+          echo "GOOGLE_REGION=${{ vars.GOOGLE_REGION || 'us-west2' }}" >> "$GITHUB_ENV"
           echo "IMAGE_TAG=${{ github.sha }}-$(date +'%Y%m%d%H%M%S')" >> "$GITHUB_ENV"
 
       - name: SET ENVIRONMENT SPECIFIC VARIABLES FOR MAIN
         if: github.ref == 'refs/heads/main'
         run: |
-          echo "NEXT_PUBLIC_SITE_URL=${{ secrets.PROD_NEXT_PUBLIC_SITE_URL }}" >> "$GITHUB_ENV"
+          echo "NEXT_PUBLIC_SITE_URL=${{ vars.PROD_NEXT_PUBLIC_SITE_URL }}" >> "$GITHUB_ENV"
           echo "SERVICE_NAME=meta-crm-service-prod" >> "$GITHUB_ENV"
           echo "MIN_INSTANCES=1" >> "$GITHUB_ENV"
 
       - name: SET ENVIRONEMENT SPECIFIC VARIABLES FOR DEV
         if: github.ref == 'refs/heads/dev'
         run: |
-          echo "NEXT_PUBLIC_SITE_URL=${{ secrets.DEV_NEXT_PUBLIC_SITE_URL }}" >> "$GITHUB_ENV"
+          echo "NEXT_PUBLIC_SITE_URL=${{ vars.DEV_NEXT_PUBLIC_SITE_URL }}" >> "$GITHUB_ENV"
           echo "SERVICE_NAME=meta-crm-service-dev" >> "$GITHUB_ENV"
           echo "MIN_INSTANCES=0" >> "$GITHUB_ENV"
 
@@ -64,8 +69,8 @@ jobs:
 
       - name: BUILD AND PUSH THE DOCKER IMAGE
         env:
-          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          NEXT_PUBLIC_SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ vars.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
         run: |
           gcloud auth configure-docker ${GOOGLE_REGION}-docker.pkg.dev --quiet
 
@@ -93,7 +98,7 @@ jobs:
             --concurrency=80 \
             --timeout=300 \
             --set-env-vars="NEXT_PUBLIC_SITE_URL=${NEXT_PUBLIC_SITE_URL},NEXT_PUBLIC_APP_LOCALE=en" \
-            --set-secrets="SUPABASE_SERVICE_ROLE_KEY=SUPABASE_SERVICE_ROLE_KEY:latest"
+            --set-secrets="SUPABASE_SERVICE_ROLE_KEY=SUPABASE_SERVICE_ROLE_KEY:latest,ENCRYPTION_KEY=ENCRYPTION_KEY:latest,META_APP_SECRET=META_APP_SECRET:latest,META_APP_VERIFY_TOKEN=META_APP_VERIFY_TOKEN:latest"
 
       - name: OUTPUT SERVICE URL
         run: |
