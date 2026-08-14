@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none" role="img" aria-label="Product placeholder">
+  <rect width="64" height="64" rx="12" fill="#e2e8f0"/>
+  <path d="M32 14 50 23.5V40.5L32 50 14 40.5V23.5L32 14Z" stroke="#94a3b8" stroke-width="2.5" stroke-linejoin="round" fill="none"/>
+  <path d="M14 23.5 32 33 50 23.5" stroke="#94a3b8" stroke-width="2.5" stroke-linejoin="round" fill="none"/>
+  <path d="M32 33V50" stroke="#94a3b8" stroke-width="2.5" stroke-linejoin="round"/>
+</svg>

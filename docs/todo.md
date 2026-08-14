@@ -28,6 +28,11 @@
 - [ ] User roles and permissions
 - [ ] Notifications and reminders
 
+## Altering
+ - [ ] Change Booking & Service page as Appoinment process kanaban
+ - [ ] Add filter by service and employee
+ - [ ] Change top revenue and count data to matching informating with this change
+
 ## Priority
 1. Stock & Product Management
 2. Billing / Bill Printing
