@@ -33,7 +33,7 @@ jobs:
         # yet. Surfaces in the Actions log either way; flip this off
         # once the backlog is clean so lint blocks deploys like the
         # other two checks.
-        continue-on-error: true
+        # continue-on-error: true
         run: npm run lint
 
       - name: UNIT TESTS

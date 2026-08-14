@@ -119,3 +119,44 @@ done
 ## License
 
 [MIT](./LICENSE).
+
+## Todo 
+
+Stock & Product Management
+Billing / Bill printing
+Employee/Staff availability time slot manage 
+Service packages Adding  (50%) done
+
+
+                         GitHub
+                            │
+                            ▼
+                     GitHub Actions
+                            │
+              ┌─────────────┴─────────────┐
+              │                           │
+             CI                     Build Docker
+              │                           │
+       tests/typecheck/lint               │
+              │                           ▼
+              │                    Artifact Registry
+              │                           │
+              └──────────────┬────────────┘
+                             │
+                             ▼
+                      DB Migration Job
+                             │
+                ┌────────────┼────────────┐
+                ▼            ▼            ▼
+              DB A         DB B         DB C
+                │            │            │
+                └────────────┼────────────┘
+                             │
+                             ▼
+                        Cloud Run
+                  ┌──────────┼──────────┐
+                  ▼          ▼          ▼
+               Client A   Client B   Client C
+                  │          │          │
+                  ▼          ▼          ▼
+               Meta A     Meta B     Meta C
