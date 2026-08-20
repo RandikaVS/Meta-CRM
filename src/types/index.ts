@@ -650,3 +650,84 @@ export interface QuickReply {
   created_at: string;
   updated_at: string;
 }
+
+// ============================================================
+// Stock & Product Management (migration 040)
+// ============================================================
+
+/**
+ * Derived, never stored — computed from `current_stock` vs
+ * `reorder_level` by both `getStockStatus` (client) and
+ * `filter_products_by_stock_status` (server, for the stock-status
+ * list filter). Keep the two in lockstep if the thresholds ever
+ * change (see `src/lib/products/stock.ts`).
+ */
+export type StockStatus = 'in_stock' | 'low_stock' | 'out_of_stock';
+
+export interface Product {
+  id: string;
+  /** Account tenancy key — NOT NULL from creation (this table postdates 017). */
+  account_id: string;
+  /** Audit only — who created the row. Never used for tenancy. */
+  created_by?: string | null;
+
+  sku: string;
+  barcode?: string | null;
+  name: string;
+  description?: string | null;
+  category?: string | null;
+  brand?: string | null;
+  image_url?: string | null;
+  /** Unit of measurement, e.g. "pcs", "bottle", "ml", "kg". Free text. */
+  unit: string;
+
+  cost_price: number;
+  selling_price: number;
+  /** Percentage, 0-100. */
+  tax_rate: number;
+
+  /**
+   * Cached snapshot of the `product_stock_movements` ledger — never
+   * the source of truth. Can ONLY change via the `adjust_product_stock`
+   * RPC (a DB trigger rejects any other UPDATE that touches this
+   * column); never write it directly from the client.
+   */
+  current_stock: number;
+  reorder_level: number;
+  max_stock_level?: number | null;
+
+  /** No dedicated suppliers table exists yet — plain reference fields. */
+  supplier_name?: string | null;
+  supplier_contact?: string | null;
+
+  is_active: boolean;
+
+  created_at: string;
+  updated_at: string;
+}
+
+export type StockMovementType =
+  | 'opening_stock'
+  | 'purchase'
+  | 'manual_increase'
+  | 'sale'
+  | 'manual_decrease'
+  | 'damaged'
+  | 'returned'
+  | 'adjustment';
+
+export interface ProductStockMovement {
+  id: string;
+  account_id: string;
+  product_id: string;
+  movement_type: StockMovementType;
+  /** Signed delta applied to current_stock — positive increases, negative decreases. */
+  quantity: number;
+  previous_stock: number;
+  new_stock: number;
+  reference_number?: string | null;
+  reason?: string | null;
+  /** Who performed the adjustment. Null if that member was later removed. */
+  created_by?: string | null;
+  created_at: string;
+}
