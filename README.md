@@ -122,9 +122,6 @@ done
 
 ## Todo 
 
-Stock & Product Management
-Billing / Bill printing
-Employee/Staff availability time slot manage 
 Service packages Adding  (50%) done
 
 
@@ -160,3 +157,7 @@ Service packages Adding  (50%) done
                   │          │          │
                   ▼          ▼          ▼
                Meta A     Meta B     Meta C
+
+
+
+

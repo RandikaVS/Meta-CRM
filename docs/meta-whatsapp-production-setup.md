@@ -1,3 +1,31 @@
+# Meta internal deployment checklist
+
+Client creates/owns Meta Business Portfolio.
+Client creates or owns Meta Business App.
+Add WhatsApp product.
+Create/select client's WABA.
+Register client's actual business phone number.
+Verify the phone number.
+Create System User.
+Give required WABA/App permissions.
+Generate production access token.
+Collect phone_number_id and waba_id.
+Configure client CRM with encrypted access token.
+Put client's META_APP_SECRET in GCP Secret Manager.
+Put client's META_APP_ID in deployment configuration if required.
+Generate a unique webhook verify token.
+Configure callback URL such as https://crm.client.com/api/whatsapp/webhook.
+Subscribe Meta webhook events.
+Send/receive test messages.
+Test templates.
+Test broadcasts.
+Remove your unnecessary Meta/admin access after handover.
+
+The wacrm webhook setup requires the callback URL, matching verify token, and META_APP_SECRET for signature verification.
+
+
+
+
 # WhatsApp Cloud API — production setup per client
 
 This is the checklist for taking a new client from "signed contract" to

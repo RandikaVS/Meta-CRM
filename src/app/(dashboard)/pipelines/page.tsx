@@ -24,12 +24,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { GitBranch, Plus, ChevronDown, Settings, Sparkles } from "lucide-react";
+import { GitBranch, Plus, ChevronDown, Settings, Sparkles, Users } from "lucide-react";
 import { toast } from "sonner";
 import { useCan } from "@/hooks/use-can";
 import { useAuth } from "@/hooks/use-auth";
 import { GatedButton } from "@/components/ui/gated-button";
 import { useTranslations } from "next-intl";
+import type { Profile } from "@/types";
 
 // Pipeline creation is admin-class (settings-tier write under
 // the new RLS); deal creation is operational and only requires
@@ -57,6 +58,12 @@ export default function PipelinesPage() {
   const [stages, setStages] = useState<PipelineStage[]>([]);
   const [deals, setDeals] = useState<Deal[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Staff filter — the process monitor's main lens on top of "which
+  // pipeline". Narrows both the board and the summary cards to one
+  // staff member's workload, or shows everyone when unset.
+  const [staffList, setStaffList] = useState<Profile[]>([]);
+  const [staffFilter, setStaffFilter] = useState("");
 
   // Dialog / sheet state
   const [newPipelineOpen, setNewPipelineOpen] = useState(false);
@@ -295,11 +302,27 @@ export default function PipelinesPage() {
     toast.success(t("toastPipelineCreated"));
   }
 
+  useEffect(() => {
+    supabase
+      .from("profiles")
+      .select("*")
+      .order("full_name")
+      .then(({ data }) => setStaffList((data as Profile[] | null) ?? []));
+  }, [supabase]);
+
   const selectedPipeline = pipelines.find((p) => p.id === selectedPipelineId);
 
   const sortedStages = useMemo(
     () => [...stages].sort((a, b) => a.position - b.position),
     [stages],
+  );
+
+  // Filtered by the selected staff member — feeds both the board and
+  // the summary cards, so "assigned to Sarah" narrows the whole
+  // process view consistently in one place.
+  const visibleDeals = useMemo(
+    () => (staffFilter ? deals.filter((d) => d.assigned_to === staffFilter) : deals),
+    [deals, staffFilter],
   );
 
   if (loading) {
@@ -321,8 +344,12 @@ export default function PipelinesPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
+      <div>
+        <h1 className="text-2xl font-bold text-foreground">{t("title")}</h1>
+        <p className="mt-1 text-sm text-muted-foreground">{t("subtitle")}</p>
+      </div>
 
-      <PipelineAnalytics stages={stages} deals={deals} />
+      <PipelineAnalytics stages={stages} deals={visibleDeals} />
 
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
@@ -331,7 +358,7 @@ export default function PipelinesPage() {
           <ServiceBadge
             name={selectedPipeline?.name ?? ""}
             stepCount={sortedStages.length}
-            bookingCount={deals.length}
+            bookingCount={visibleDeals.length}
           />
 
           <DropdownMenu>
@@ -390,7 +417,25 @@ export default function PipelinesPage() {
             <Plus className="mr-1 h-4 w-4" />
             {t("addPipeline")}
           </GatedButton>
-          
+
+          {/* Staff filter — narrows the board + summary cards to one
+              staff member's workflow (spec: "filter service and
+              workflow by staff member selecting"). */}
+          <div className="relative">
+            <Users className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+            <select
+              value={staffFilter}
+              onChange={(e) => setStaffFilter(e.target.value)}
+              className="h-9 rounded-lg border border-border bg-card py-2 pl-8 pr-3 text-sm text-foreground outline-none hover:bg-muted focus:border-primary"
+            >
+              <option value="">{t("allStaff")}</option>
+              {staffList.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.full_name || s.email}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
 
         <div className="flex items-center gap-2">
@@ -432,7 +477,7 @@ export default function PipelinesPage() {
         <>
           <PipelineBoard
             stages={stages}
-            deals={deals}
+            deals={visibleDeals}
             onDealMoved={handleDealMoved}
             onAddDeal={handleAddDeal}
             onEditDeal={handleEditDeal}
