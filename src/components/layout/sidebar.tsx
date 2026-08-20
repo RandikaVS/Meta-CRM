@@ -10,9 +10,12 @@ import { useUnreadNotifications } from "@/hooks/use-unread-notifications";
 import {
   Bell,
   Bot,
+  CalendarClock,
+  CalendarDays,
   Crown,
   GitBranch,
   LayoutDashboard,
+  ListChecks,
   LogOut,
   MessageSquare,
   Package,
@@ -90,12 +93,36 @@ interface NavItem {
   beta?: boolean;
 }
 
-const navItems: NavItem[] = [
+/** A non-navigating category heading with its own indented children —
+ *  used for "Appointments" (Appointments list + Calendar). Distinct
+ *  from NavItem so the render loop can tell a leaf link from a group
+ *  without an extra flag on every entry. */
+interface NavGroup {
+  groupLabelKey: string;
+  icon: typeof LayoutDashboard;
+  items: NavItem[];
+}
+
+type NavEntry = NavItem | NavGroup;
+
+function isNavGroup(entry: NavEntry): entry is NavGroup {
+  return "items" in entry;
+}
+
+const navItems: NavEntry[] = [
   { href: "/dashboard", labelKey: "dashboard", icon: LayoutDashboard },
   { href: "/inbox", labelKey: "inbox", icon: MessageSquare },
   // { href: "/notifications", labelKey: "notifications", icon: Bell },
   { href: "/contacts", labelKey: "contacts", icon: Users },
   { href: "/pipelines", labelKey: "pipelines", icon: GitBranch },
+  {
+    groupLabelKey: "appointments",
+    icon: CalendarClock,
+    items: [
+      { href: "/appointments", labelKey: "appointmentsList", icon: ListChecks },
+      { href: "/appointments/calendar", labelKey: "appointmentsCalendar", icon: CalendarDays },
+    ],
+  },
   { href: "/products", labelKey: "products", icon: Package },
   { href: "/broadcasts", labelKey: "broadcasts", icon: Radio },
   { href: "/automations", labelKey: "automations", icon: Zap },
@@ -219,7 +246,43 @@ export function Sidebar({ open = false, onClose }: SidebarProps) {
         {/* Main navigation */}
         <nav className="flex-1 overflow-y-auto px-3 py-4">
           <ul className="flex flex-col gap-1">
-            {navItems.map((item) => {
+            {navItems.map((entry) => {
+              if (isNavGroup(entry)) {
+                return (
+                  <li key={entry.groupLabelKey}>
+                    {/* Non-navigating category heading, per the requested
+                        "Appointments" parent + indented children shape. */}
+                    <div className="flex items-center gap-3 px-3 py-2 text-sm font-medium text-muted-foreground lg:py-1.5">
+                      <entry.icon className="h-4 w-4" />
+                      <span>{t(entry.groupLabelKey as string)}</span>
+                    </div>
+                    <ul className="ml-4 flex flex-col gap-1 border-l border-border pl-3">
+                      {entry.items.map((item) => {
+                        const isActive =
+                          pathname === item.href || pathname.startsWith(`${item.href}/`);
+                        return (
+                          <li key={item.href}>
+                            <Link
+                              href={item.href}
+                              className={cn(
+                                "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors lg:py-2",
+                                isActive
+                                  ? "bg-primary/10 text-primary"
+                                  : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                              )}
+                            >
+                              <item.icon className="h-4 w-4" />
+                              <span className="flex-1">{t(item.labelKey as string)}</span>
+                            </Link>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </li>
+                );
+              }
+
+              const item = entry;
               const isActive =
                 pathname === item.href ||
                 (item.href !== "/dashboard" && pathname.startsWith(item.href));

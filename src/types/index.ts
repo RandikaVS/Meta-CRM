@@ -731,3 +731,198 @@ export interface ProductStockMovement {
   created_by?: string | null;
   created_at: string;
 }
+
+// ============================================================
+// Appointment Management (migration 041)
+// ============================================================
+
+export interface Service {
+  id: string;
+  account_id: string;
+  created_by?: string | null;
+  name: string;
+  description?: string | null;
+  category?: string | null;
+  duration_minutes: number;
+  price: number;
+  tax_rate: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+/** 0 = Sunday .. 6 = Saturday, matching JS Date#getDay(). */
+export interface StaffSchedule {
+  id: string;
+  account_id: string;
+  /** profiles.id (not auth.users.id) — same FK target as deals.assigned_to. */
+  staff_id: string;
+  day_of_week: number;
+  /** "HH:MM" or "HH:MM:SS" (Postgres `time`). */
+  start_time: string;
+  end_time: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface StaffTimeOff {
+  id: string;
+  account_id: string;
+  staff_id: string;
+  start_at: string;
+  end_at: string;
+  reason?: string | null;
+  created_by?: string | null;
+  created_at: string;
+}
+
+export type AppointmentStatus =
+  | 'scheduled'
+  | 'confirmed'
+  | 'checked_in'
+  | 'in_progress'
+  | 'completed'
+  | 'cancelled'
+  | 'no_show'
+  /** Rarely a *stored* status on the live row (reschedules update the
+   *  same row in place) — kept as a valid value for edge cases; the
+   *  normal audit trail for a reschedule is a 'rescheduled' event,
+   *  not this status. */
+  | 'rescheduled';
+
+export type AppointmentSource = 'manual' | 'calendar' | 'booking' | 'api';
+export type AppointmentDiscountType = 'percentage' | 'fixed';
+export type AppointmentPaymentStatus = 'unpaid' | 'partially_paid' | 'paid' | 'refunded';
+
+export interface Appointment {
+  id: string;
+  account_id: string;
+  appointment_number: string;
+
+  contact_id?: string | null;
+  staff_id?: string | null;
+  /** Optional link back to a "Bookings & Services" pipeline card. */
+  deal_id?: string | null;
+
+  start_at: string;
+  end_at: string;
+
+  status: AppointmentStatus;
+  source: AppointmentSource;
+
+  customer_notes?: string | null;
+  internal_notes?: string | null;
+  cancel_reason?: string | null;
+
+  /** Set only when an admin has explicitly overridden a scheduling
+   *  conflict — see `guard_appointment_override` in migration 041. */
+  override_reason?: string | null;
+  override_by?: string | null;
+
+  discount_type?: AppointmentDiscountType | null;
+  discount_value: number;
+  tax_rate: number;
+
+  /** Kept in sync with line items by a DB trigger — never compute
+   *  these client-side as the source of truth, only for live preview
+   *  before the row is saved. */
+  subtotal_amount: number;
+  discount_amount: number;
+  tax_amount: number;
+  total_amount: number;
+
+  amount_paid: number;
+  payment_status: AppointmentPaymentStatus;
+
+  /** True once `complete_appointment()` has run — schedule and
+   *  pricing fields are then locked at the DB level. */
+  is_billed: boolean;
+
+  created_by?: string | null;
+  updated_by?: string | null;
+
+  checked_in_at?: string | null;
+  completed_at?: string | null;
+  cancelled_at?: string | null;
+
+  created_at: string;
+  updated_at: string;
+
+  // Hydrated by queries that embed relations — absent otherwise.
+  contact?: Contact;
+  staff?: Profile;
+  services?: AppointmentServiceLine[];
+  products?: AppointmentProductLine[];
+}
+
+export interface AppointmentServiceLine {
+  id: string;
+  account_id: string;
+  appointment_id: string;
+  service_id?: string | null;
+  /** Captured at add-time — survives a later rename/price change on the catalog row. */
+  name_snapshot: string;
+  quantity: number;
+  unit_price: number;
+  discount_amount: number;
+  duration_minutes: number;
+  /** DB-generated column — never write this, it's computed server-side. */
+  line_total: number;
+  created_at: string;
+}
+
+export interface AppointmentProductLine {
+  id: string;
+  account_id: string;
+  appointment_id: string;
+  product_id?: string | null;
+  name_snapshot: string;
+  quantity: number;
+  unit_price: number;
+  discount_amount: number;
+  /** DB-generated column — never write this, it's computed server-side. */
+  line_total: number;
+  /** Set once `complete_appointment()` has deducted stock for this
+   *  line — the idempotency marker that makes a retry safe. */
+  stock_movement_id?: string | null;
+  created_at: string;
+}
+
+export interface AppointmentPayment {
+  id: string;
+  account_id: string;
+  appointment_id: string;
+  /** Signed — positive = payment received, negative = refund. */
+  amount: number;
+  method: 'cash' | 'card' | 'bank_transfer' | 'online' | 'other';
+  note?: string | null;
+  recorded_by?: string | null;
+  created_at: string;
+}
+
+export type AppointmentEventType =
+  | 'created'
+  | 'staff_changed'
+  | 'time_changed'
+  | 'service_changed'
+  | 'product_changed'
+  | 'status_changed'
+  | 'rescheduled'
+  | 'checked_in'
+  | 'completed'
+  | 'cancelled'
+  | 'bill_finalized'
+  | 'payment_recorded'
+  | 'whatsapp_sent'
+  | 'whatsapp_failed'
+  | 'override_used';
+
+export interface AppointmentEvent {
+  id: string;
+  account_id: string;
+  appointment_id: string;
+  event_type: AppointmentEventType;
+  actor_user_id?: string | null;
+  payload: Record<string, unknown>;
+  created_at: string;
+}

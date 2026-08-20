@@ -5,6 +5,7 @@ on:
     branches:
       - "main"
       - "saloon-pre-prod"
+      - "saloon-qa"
 
 
 jobs:
@@ -68,6 +69,13 @@ jobs:
           echo "NEXT_PUBLIC_SITE_URL=${{ vars.PROD_NEXT_PUBLIC_SITE_URL }}" >> "$GITHUB_ENV"
           echo "SERVICE_NAME=meta-crm-service-prod" >> "$GITHUB_ENV"
           echo "MIN_INSTANCES=1" >> "$GITHUB_ENV"
+
+      - name: SET ENVIRONEMENT SPECIFIC VARIABLES FOR QA
+        if: github.ref == 'refs/heads/saloon-qa'
+        run: |
+          echo "NEXT_PUBLIC_SITE_URL=${{ vars.DEV_NEXT_PUBLIC_SITE_URL }}" >> "$GITHUB_ENV"
+          echo "SERVICE_NAME=meta-crm-service-saloon-qa" >> "$GITHUB_ENV"
+          echo "MIN_INSTANCES=0" >> "$GITHUB_ENV"
 
       - name: SET ENVIRONEMENT SPECIFIC VARIABLES FOR DEV
         if: github.ref == 'refs/heads/saloon-pre-prod'
